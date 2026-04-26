@@ -21,7 +21,7 @@ Global supply chains are incredibly vulnerable to unexpected disruptions such as
 ## 🛠️ Tech Stack
 - **Backend**: FastAPI (Python)
 - **Machine Learning**: Scikit-Learn (Random Forest Classifier), Pandas, NumPy
-- **AI Integration**: Google Gemini API
+- **AI Integration**: Google GenAI SDK (with timeout & fallback safety)
 - **Deployment**: Uvicorn
 
 ## 📂 Project Structure
@@ -41,8 +41,8 @@ flowsync_AI/
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/flowsync-ai.git
-cd flowsync-ai
+git clone https://github.com/Codernoob000/flowsync-ai-1.git
+cd flowsync-ai-1
 ```
 
 ### 2. Set Up a Virtual Environment (Recommended)
@@ -64,8 +64,7 @@ GEMINI_API_KEY=your_google_gemini_api_key_here
 
 ### 5. Start the Application
 ```bash
-cd backend
-uvicorn app:app --reload
+uvicorn backend.app:app --reload
 ```
 *The API will be available at `http://127.0.0.1:8000`. You can view the interactive documentation at `http://127.0.0.1:8000/docs`.*
 

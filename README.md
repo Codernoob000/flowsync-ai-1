@@ -1,44 +1,65 @@
-# FlowSync AI
+# FlowSync AI – Intelligent Route Optimization System
 
-> AI-powered supply chain route optimization system
+## Overview
+FlowSync AI is an AI-powered route optimization platform that integrates real-time data to suggest the most efficient and safest paths. It uses Google Maps for multi-route generation, OpenWeather for dynamic weather condition integration, and a Scikit-learn machine learning model for risk prediction, all explained clearly via Gemini AI.
 
-## Architecture
+## Features
+* Multi-route generation (Google Maps)
+* Traffic-aware routing
+* Weather integration
+* ML-based risk prediction
+* Gemini-powered explanations
+* Best route selection
 
-Frontend → FastAPI Backend → AI Engine → External APIs
+## Tech Stack
+* FastAPI
+* Python
+* Google Maps API
+* OpenWeather API
+* Gemini API
+* Scikit-learn
 
-## Folder Explanation
+## Project Structure
+* `backend/` - The main backend directory.
+* `app/` - The core application codebase.
+* `routes/` - FastAPI router definitions and endpoint handlers.
+* `services/` - Business logic, AI integration, and external API calls.
+* `models/` - Machine learning models and data schemas.
 
-- **backend/**: Main FastAPI system containing routes, services, and ML inference.
-- **ml/**: Machine learning training code and data generation scripts (only used for training).
-- **frontend/**: UI codebase for mapping and visualizing logistics routes.
-
-## Setup
-
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-
-2. Install dependencies:
+## Setup Instructions
+1. Clone repo
+2. Go to `backend/` directory
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-
-3. Run the development server:
+4. Create `.env` file with your API keys:
+   ```env
+   GEMINI_API_KEY=your_key_here
+   OPENWEATHER_API_KEY=your_key_here
+   GOOGLE_MAPS_API_KEY=your_key_here
+   ```
+5. Run server:
    ```bash
    uvicorn app.main:app --reload
    ```
 
 ## API Endpoints
+* `POST /routes/best-route` - Calculates and returns the optimal route along with alternative paths.
+* `GET /weather/{city}` - Fetches real-time weather information for the specified city.
+* `GET /routes/demo` - Returns a set of demo routes for quick testing and visualization.
 
-- **`POST /routes/best-route`**: Evaluates routes using the AI engine and real-time weather to select the optimal path.
-- **`GET /routes/demo`**: Ready-made demo endpoint.
-- **`GET /weather/{city}`**: Fetches real-time weather conditions via OpenWeather.
-- **`GET /shipments/`**: Shipment management API.
+## Example Usage
+**Mumbai → Hyderabad**
+The system evaluates multiple paths between Mumbai and Hyderabad, accounting for traffic and weather anomalies.
 
-## Demo Flow
+## Output Includes
+* routes
+* risk levels
+* AI explanation
+* best route
 
-To test route optimization:
-1. Ensure the server is running.
-2. Send a POST request to `/routes/best-route` with `origin`, `destination`, and coordinates.
-3. The system will retrieve possible routes, check live weather, evaluate them using the ML model, and return the safest and fastest option.
+## Future Improvements
+* frontend map visualization
+* real-time alerts
+* dashboard UI

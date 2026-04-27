@@ -2,11 +2,8 @@ from fastapi import FastAPI
 from dotenv import load_dotenv
 import os
 
-# ✅ FORCE correct .env path
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-ENV_PATH = os.path.join(BASE_DIR, ".env")
-
-load_dotenv(dotenv_path=ENV_PATH)
+# Load environment variables
+load_dotenv()
 
 from app.routes import routes, weather, shipments
 

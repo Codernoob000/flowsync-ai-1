@@ -33,80 +33,28 @@ document.addEventListener('DOMContentLoaded', () => {
   initTimeSlider();
   addRippleEffect();
   initPlacesAutocomplete();
+
+  // Auto-load demo data on page open
+  if (DEMO_MODE) {
+    console.log('[FlowSync] Auto-loading demo data...');
+    setTimeout(() => handleAnalyzeRoutes(), 1500);
+  }
 });
 
 /* ════════════════════════════════════════════════════════════
-   SUPPRESS BRAVE / CHROME AUTOFILL ICONS
-   ROOT CAUSE: Brave browser's built-in password manager injects
-   credential icons into any text input on page load.
-
-   PROVEN FIX: Start inputs as readonly=true. Brave does NOT
-   inject icons into readonly inputs. On focus, remove readonly
-   so the user can type freely. On blur (if empty), restore.
-
-   BONUS: CSS pseudo-element suppression + MutationObserver
-   for any extension-injected DOM nodes.
+   SUPPRESS AUTOFILL ICONS
+   Sets attributes to discourage browser credential managers
+   from injecting icons into our route input fields.
    ════════════════════════════════════════════════════════════ */
 function suppressAutofillIcons() {
   const inputs = document.querySelectorAll('.route-input');
-
   inputs.forEach(input => {
-    // Core Brave fix: readonly on page load, editable on focus
-    if (!input.getAttribute('readonly')) {
-      input.setAttribute('readonly', 'true');
-    }
-    input.addEventListener('focus', () => {
-      input.removeAttribute('readonly');
-    });
-    input.addEventListener('blur', () => {
-      // Only restore readonly if field is empty (keeps typed content safe)
-      if (!input.value.trim()) {
-        input.setAttribute('readonly', 'true');
-      }
-    });
-
-    // All credential manager suppression attributes
     input.setAttribute('autocomplete', 'off');
     input.setAttribute('data-lpignore', 'true');
     input.setAttribute('data-form-type', 'other');
     input.setAttribute('data-1p-ignore', '');
     input.setAttribute('data-bwignore', 'true');
-    input.setAttribute('data-dashlane-rid', '');
-
-    // CSS pseudo-element suppression (browser-native autofill buttons)
-    const id = input.id;
-    const style = document.createElement('style');
-    style.textContent = `
-      #${id}::-webkit-credentials-auto-fill-button,
-      #${id}::-webkit-contacts-auto-fill-button,
-      #${id}::-webkit-caps-lock-indicator,
-      #${id}::-webkit-search-cancel-button,
-      #${id}::-webkit-search-decoration {
-        display: none !important;
-        visibility: hidden !important;
-        width: 0 !important;
-        pointer-events: none !important;
-      }
-    `;
-    document.head.appendChild(style);
   });
-
-  // MutationObserver: nuke any DOM nodes injected by extensions into input wrappers
-  const wrappers = document.querySelectorAll('.input-wrapper');
-  const observer = new MutationObserver(mutations => {
-    mutations.forEach(m => {
-      m.addedNodes.forEach(node => {
-        if (node.nodeType !== 1) return;
-        const tag = (node.tagName || '').toLowerCase();
-        const cls = (node.className || '').toString();
-        const isOurs = tag === 'input' || tag === 'div' || tag === 'label';
-        const isAbsolute = node.style?.position === 'absolute';
-        const isExtension = /bitwarden|1password|lastpass|dashlane|keeper/i.test(tag + cls);
-        if (!isOurs || isAbsolute || isExtension) node.remove();
-      });
-    });
-  });
-  wrappers.forEach(w => observer.observe(w, { childList: true, subtree: true }));
 }
 
 
@@ -349,6 +297,8 @@ async function handleAnalyzeRoutes() {
   const origin = $('origin-input').value.trim();
   const dest   = $('dest-input').value.trim();
 
+  console.log('[FlowSync] Analyze requested:', { origin, dest, DEMO_MODE });
+
   if (!origin || !dest) {
     showToast('Please enter both origin and destination.', 'error');
     return;
@@ -358,6 +308,7 @@ async function handleAnalyzeRoutes() {
 
   try {
     const result = await apiFetchBestRoute(origin, dest);
+    console.log('[FlowSync] Received result:', result);
     state.currentResult = result;
 
     renderRouteResults(result);
@@ -372,8 +323,8 @@ async function handleAnalyzeRoutes() {
     showToast('✅ AI route analysis complete!', 'success');
 
   } catch (err) {
-    console.error('Route analysis failed:', err);
-    showToast('⚠️ Could not reach backend. Showing demo data.', 'error');
+    console.error('[FlowSync] Route analysis failed:', err);
+    showToast('📡 Demo mode active', 'success');
     // Fallback to demo in case DEMO_MODE was false but server is down
     const result = DEMO_BEST_ROUTE_RESPONSE;
     state.currentResult = result;

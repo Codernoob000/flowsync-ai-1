@@ -6,19 +6,26 @@ from app.services.gemini_svc import generate_explanation
 # -----------------------------
 # Load Model (SAFE PATH)
 # -----------------------------
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "..", "model.pkl")
+
+model = None
 
 try:
     with open(MODEL_PATH, "rb") as f:
         model = pickle.load(f)
-except:
+    print("[OK] Model loaded from", MODEL_PATH)
+except Exception as e:
+    print("[WARN] Model load failed:", e, "- Using rule-based fallback.")
     model = None
 
 # -----------------------------
 # Prepare Input
 # -----------------------------
 def prepare_input(data):
+    if model is None:
+        return None
+
     df = pd.DataFrame([data])
     df = pd.get_dummies(df)
 
@@ -40,6 +47,35 @@ def get_risk(probability):
         return "Medium"
     else:
         return "High"
+
+# -----------------------------
+# Rule-based risk (fallback when model is None)
+# -----------------------------
+def get_risk_heuristic(route):
+    """Determine risk from route data without ML model."""
+    traffic = route.get("traffic", "medium")
+    weather = route.get("weather", "clear")
+    time_of_day = route.get("time_of_day", "morning")
+
+    score = 0.3  # baseline
+
+    if traffic == "high":
+        score += 0.3
+    elif traffic == "medium":
+        score += 0.15
+
+    if weather in ["storm", "thunderstorm"]:
+        score += 0.35
+    elif weather in ["rain", "fog", "foggy"]:
+        score += 0.2
+    elif weather in ["drizzle", "mist", "haze"]:
+        score += 0.1
+
+    if time_of_day in ["evening", "night"]:
+        score += 0.1
+
+    score = min(score, 1.0)
+    return score, get_risk(score)
 
 # -----------------------------
 # Explanation Generator
@@ -102,10 +138,13 @@ def evaluate_routes(routes):
     results = []
 
     for route in routes:
-        df = prepare_input(route)
-
-        probability = model.predict_proba(df)[0][1]
-        risk = get_risk(probability)
+        # Use ML model if available, otherwise fall back to heuristics
+        if model is not None:
+            df = prepare_input(route)
+            probability = float(model.predict_proba(df)[0][1])
+            risk = get_risk(probability)
+        else:
+            probability, risk = get_risk_heuristic(route)
 
         # 🔥 SAFETY OVERRIDES
         if route["weather"] == "storm":
@@ -125,13 +164,6 @@ def evaluate_routes(routes):
             action = "Use with caution"
         else:
             action = "Safe route"
-        # try:
-        #     explanation = generate_explanation(route, risk)
-        #     if not explanation or len(explanation) < 5:
-        #         raise ValueError("Invalid Gemini response")
-        # except Exception as e:
-        #     print("GEMINI ERROR:", e)
-        #     explanation = explain(route, risk)
         # 🔥 DISABLE GEMINI TEMPORARILY (STABLE MODE)
 
         explanation = explain(route, risk)

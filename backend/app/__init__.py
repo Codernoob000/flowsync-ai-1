@@ -1,0 +1,1 @@
+# FlowSync AI - app package

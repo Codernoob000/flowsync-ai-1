@@ -16,7 +16,7 @@ async def fetch_weather(city: str) -> dict:
     print("WEATHER API KEY:", "loaded" if API_KEY else "MISSING")  # safe check
 
     if not API_KEY:
-        print("❌ No API key found")
+        print("[WARN] No API key found")
         return _mock(city)
 
     try:
@@ -30,7 +30,7 @@ async def fetch_weather(city: str) -> dict:
                 }
             )
 
-            print("STATUS CODE:", r.status_code)  # ✅ check API response
+            print("STATUS CODE:", r.status_code)  # check API response
 
             r.raise_for_status()
             d = r.json()
@@ -49,7 +49,7 @@ async def fetch_weather(city: str) -> dict:
             }
 
     except Exception as e:
-        print("❌ ERROR:", str(e))  # ✅ THIS IS THE REAL ISSUE
+        print("[ERROR] Weather fetch failed:", str(e))
         return _mock(city)
 
 def _mock(city: str) -> dict:

@@ -2,7 +2,10 @@ import pickle
 import pandas as pd
 
 # Load trained model
-model = pickle.load(open("model.pkl", "rb"))
+try:
+    model = pickle.load(open("model.pkl", "rb"))
+except:
+    model = None
 
 # Sample input (you can change this)
 input_data = {

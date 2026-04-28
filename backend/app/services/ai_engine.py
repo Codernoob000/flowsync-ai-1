@@ -9,8 +9,11 @@ from app.services.gemini_svc import generate_explanation
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "..", "model.pkl")
 
-with open(MODEL_PATH, "rb") as f:
-    model = pickle.load(f)
+try:
+    with open(MODEL_PATH, "rb") as f:
+        model = pickle.load(f)
+except:
+    model = None
 
 # -----------------------------
 # Prepare Input

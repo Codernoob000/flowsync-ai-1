@@ -2,9 +2,23 @@ import pickle
 import pandas as pd
 
 # Load trained model
+
+import os
+import pickle
+
+model = None
+
 try:
-    model = pickle.load(open("model.pkl", "rb"))
-except:
+    BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+    MODEL_PATH = os.path.join(BASE_DIR, "..", "model.pkl")
+
+    with open(MODEL_PATH, "rb") as f:
+        model = pickle.load(f)
+
+    print("✅ Model loaded successfully")
+
+except Exception as e:
+    print("❌ Model load failed:", e)
     model = None
 
 # Sample input (you can change this)

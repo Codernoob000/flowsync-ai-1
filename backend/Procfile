@@ -1,0 +1,1 @@
+web: uvicorn app.main:app --host=[IP_ADDRESS] --port=8080

@@ -13,7 +13,7 @@ SEVERITY = {
 async def fetch_weather(city: str) -> dict:
     API_KEY = os.getenv("OPENWEATHER_API_KEY")
 
-    print("API KEY:", API_KEY)  # ✅ check if key loads
+    print("WEATHER API KEY:", "loaded" if API_KEY else "MISSING")  # safe check
 
     if not API_KEY:
         print("❌ No API key found")

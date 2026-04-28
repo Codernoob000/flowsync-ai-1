@@ -122,13 +122,16 @@ def evaluate_routes(routes):
             action = "Use with caution"
         else:
             action = "Safe route"
-        try:
-            explanation = generate_explanation(route, risk)
-            if not explanation or len(explanation) < 5:
-                raise ValueError("Invalid Gemini response")
-        except Exception as e:
-            print("GEMINI ERROR:", e)
-            explanation = explain(route, risk)
+        # try:
+        #     explanation = generate_explanation(route, risk)
+        #     if not explanation or len(explanation) < 5:
+        #         raise ValueError("Invalid Gemini response")
+        # except Exception as e:
+        #     print("GEMINI ERROR:", e)
+        #     explanation = explain(route, risk)
+        # 🔥 DISABLE GEMINI TEMPORARILY (STABLE MODE)
+
+        explanation = explain(route, risk)
         
         results.append({
             "route": route,

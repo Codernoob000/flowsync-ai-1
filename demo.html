@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FlowSync AI – Route Intelligence Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#06060f;--bg2:#0d0d1f;--glass:rgba(255,255,255,0.05);--border:rgba(255,255,255,0.08);
+  --violet:#7c3aed;--violet-l:#a78bfa;--cyan:#06b6d4;
+  --green:#22c55e;--yellow:#eab308;--red:#ef4444;--txt:rgba(255,255,255,0.9);--txt2:rgba(255,255,255,0.6);--txt3:rgba(255,255,255,0.35);
+}
+body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;min-height:100vh}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;border-bottom:1px solid var(--border);background:rgba(6,6,15,.9);backdrop-filter:blur(20px);position:sticky;top:0;z-index:999}
+.logo{font-family:'Outfit',sans-serif;font-size:22px;font-weight:900;background:linear-gradient(135deg,var(--violet-l),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-badge{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#f87171;font-size:11px;padding:4px 12px;border-radius:99px;font-family:'JetBrains Mono',monospace;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.hero{text-align:center;padding:80px 20px 50px;background:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,.12) 0%,transparent 70%)}
+.hero h1{font-family:'Outfit',sans-serif;font-size:clamp(40px,6vw,72px);font-weight:900;line-height:1}
+.hero h1 span{background:linear-gradient(135deg,var(--violet-l),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--txt2);font-size:17px;margin:20px auto 0;max-width:520px;line-height:1.7}
+.container{max-width:1300px;margin:0 auto;padding:0 24px}
+.demo{display:grid;grid-template-columns:360px 1fr;gap:24px;padding:40px 24px;max-width:1300px;margin:0 auto}
+.panel{background:var(--glass);border:1px solid var(--border);border-radius:20px;padding:24px;backdrop-filter:blur(20px)}
+.panel-title{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+.badge-live{display:flex;align-items:center;gap:6px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--green)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite}
+.route-select{margin-bottom:16px}
+.route-select label{display:block;font-size:11px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.route-select select,.route-select input{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--txt);font-size:13.5px;font-family:'Inter',sans-serif;outline:none;transition:.2s}
+.route-select select:focus,.route-select input:focus{border-color:var(--violet);background:rgba(124,58,237,.08)}
+.route-select select option{background:#1a1a2e}
+.btn-analyze{width:100%;padding:14px;background:linear-gradient(135deg,var(--violet),var(--cyan));border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;transition:.2s;margin-top:8px}
+.btn-analyze:hover{opacity:.9;transform:translateY(-1px)}
+.btn-analyze:active{transform:translateY(0)}
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+.results{display:none;flex-direction:column;gap:10px}
+.route-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.route-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:99px 0 0 99px;transition:.2s}
+.route-card.best::before{background:var(--cyan);box-shadow:0 0 12px rgba(6,182,212,.4)}
+.route-card.medium::before{background:var(--yellow);box-shadow:0 0 12px rgba(234,179,8,.4)}
+.route-card.high::before{background:var(--red);box-shadow:0 0 12px rgba(239,68,68,.4)}
+.route-card:hover{background:rgba(255,255,255,.06);transform:translateX(2px)}
+.route-card.active{background:rgba(124,58,237,.12);border-color:rgba(124,58,237,.4)}
+.rc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.rc-label{font-size:13px;font-weight:700;color:var(--txt)}
+.rc-badge{font-size:10px;font-family:'JetBrains Mono',monospace;padding:2px 9px;border-radius:99px;font-weight:700}
+.rc-badge.best{background:rgba(6,182,212,.15);color:var(--cyan);border:1px solid rgba(6,182,212,.25)}
+.rc-badge.medium{background:rgba(234,179,8,.15);color:var(--yellow);border:1px solid rgba(234,179,8,.25)}
+.rc-badge.high{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.rc-meta{font-size:12px;color:var(--txt2);display:flex;gap:14px}
+.map-wrap{position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--border)}
+#map{height:560px;width:100%;background:#0d0d1f}
+.map-overlay{position:absolute;top:16px;left:16px;background:rgba(6,6,15,.88);border:1px solid var(--border);border-radius:99px;padding:7px 16px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--txt2);display:flex;align-items:center;gap:8px;z-index:500}
+.insights{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;padding:0 24px 40px;max-width:1300px;margin:0 auto}
+.insight-card{background:var(--glass);border:1px solid var(--border);border-radius:20px;padding:24px;backdrop-filter:blur(20px);transition:.2s}
+.insight-card:hover{border-color:rgba(124,58,237,.3);transform:translateY(-2px)}
+.insight-label{font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;font-family:'JetBrains Mono',monospace}
+.risk-value{font-family:'JetBrains Mono',monospace;font-size:40px;font-weight:700;transition:.8s}
+.risk-bar{height:8px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin:12px 0}
+.risk-fill{height:100%;border-radius:99px;transition:width 1s ease,background .5s}
+.action-text{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--green);transition:.5s}
+.ai-text{font-size:14px;color:var(--txt2);line-height:1.75;min-height:80px}
+.tag{display:inline-block;font-size:11px;padding:3px 12px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.25);border-radius:99px;color:var(--violet-l);font-family:'JetBrains Mono',monospace;margin:4px 4px 0 0}
+.loader{display:none;text-align:center;padding:20px;color:var(--txt2);font-size:13px}
+.loader-ring{display:inline-block;width:24px;height:24px;border:2px solid rgba(124,58,237,.2);border-top-color:var(--violet);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.legend{position:absolute;bottom:16px;right:16px;background:rgba(6,6,15,.9);border:1px solid var(--border);border-radius:12px;padding:12px 16px;z-index:500;font-size:12px;color:var(--txt2)}
+.legend-item{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.legend-item:last-child{margin-bottom:0}
+.leg-line{width:28px;height:4px;border-radius:99px}
+footer{text-align:center;padding:30px;color:var(--txt3);font-size:12px;border-top:1px solid var(--border);margin-top:20px}
+@media(max-width:900px){.demo{grid-template-columns:1fr}.insights{grid-template-columns:1fr}#map{height:350px}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="logo">FlowSync AI</div>
+  <div class="nav-badge"><span style="width:6px;height:6px;border-radius:50%;background:#ef4444;display:inline-block;margin-right:6px;animation:pulse 1.5s infinite"></span>DEMO MODE</div>
+</nav>
+
+<div class="hero">
+  <h1>Route Intelligence <span>Dashboard</span></h1>
+  <p>AI-powered route optimization for logistics and supply chains. Select a Hyderabad route to see real-time analysis.</p>
+</div>
+
+<div class="demo">
+  <!-- Control Panel -->
+  <div class="panel">
+    <div class="panel-title">
+      Route Analyzer
+      <div class="badge-live"><span class="dot"></span>DEMO</div>
+    </div>
+
+    <div class="route-select">
+      <label>Select Route</label>
+      <select id="route-select" onchange="onRouteChange()">
+        <option value="0">Charminar → Gachibowli</option>
+        <option value="1">Secunderabad Stn → HITEC City</option>
+        <option value="2">Banjara Hills → Kukatpally</option>
+        <option value="3">LB Nagar → Miyapur</option>
+        <option value="4">Ameerpet → Uppal</option>
+      </select>
+    </div>
+
+    <button class="btn-analyze" onclick="analyze()">🔍 &nbsp;Analyze Routes</button>
+
+    <div class="loader" id="loader"><span class="loader-ring"></span>AI analyzing routes…</div>
+
+    <hr class="divider"/>
+
+    <div class="results" id="results"></div>
+  </div>
+
+  <!-- Map -->
+  <div class="map-wrap">
+    <div class="map-overlay"><span class="dot"></span>Hyderabad · Live Traffic Simulation</div>
+    <div id="map"></div>
+    <div class="legend">
+      <div class="legend-item"><div class="leg-line" style="background:#06b6d4"></div>Best Route</div>
+      <div class="legend-item"><div class="leg-line" style="background:#eab308"></div>Alt Route 1</div>
+      <div class="legend-item"><div class="leg-line" style="background:#ef4444"></div>Alt Route 2</div>
+    </div>
+  </div>
+</div>
+
+<!-- AI Insights -->
+<div class="insights">
+  <div class="insight-card">
+    <div class="insight-label">Risk Score</div>
+    <div class="risk-value" id="risk-val" style="color:var(--yellow)">--</div>
+    <div class="risk-bar"><div class="risk-fill" id="risk-fill" style="width:0%;background:var(--yellow)"></div></div>
+    <div style="font-size:12px;color:var(--txt3);font-family:'JetBrains Mono',monospace" id="risk-label">–</div>
+  </div>
+  <div class="insight-card">
+    <div class="insight-label">Recommended Action</div>
+    <div class="action-text" id="action-text">–</div>
+    <div style="font-size:13px;color:var(--txt2);margin-top:10px;line-height:1.6" id="action-desc">–</div>
+  </div>
+  <div class="insight-card">
+    <div class="insight-label">AI Explanation</div>
+    <div class="ai-text" id="ai-text">Select a route and click Analyze Routes to see AI-generated insights.</div>
+    <div id="tags"></div>
+  </div>
+</div>
+
+<footer>FlowSync AI · Demo Mode · No API keys required · Hyderabad Route Intelligence</footer>
+
+<script>
+// ── Route Data ──────────────────────────────────────────────────────
+const ROUTES = [
+  {
+    name:"Charminar → Gachibowli",
+    options:[
+      {label:"Route 1",dist:"20.2 km",time:"48 min",traffic:"Low",risk:"medium",score:42,
+       color:"#06b6d4",path:[[17.3616,78.4747],[17.3750,78.4680],[17.3900,78.4550],[17.4060,78.4380],[17.4180,78.4220],[17.4280,78.4000],[17.4380,78.3700],[17.4401,78.3489]]},
+      {label:"Route 2",dist:"24.1 km",time:"55 min",traffic:"Med",risk:"medium",score:58,
+       color:"#eab308",path:[[17.3616,78.4747],[17.3500,78.4600],[17.3450,78.4350],[17.3600,78.3900],[17.3900,78.3600],[17.4200,78.3500],[17.4401,78.3489]]},
+      {label:"Route 3",dist:"31.5 km",time:"70 min",traffic:"High",risk:"high",score:74,
+       color:"#ef4444",path:[[17.3616,78.4747],[17.3800,78.5000],[17.4100,78.5200],[17.4600,78.4800],[17.4500,78.4000],[17.4401,78.3489]]}
+    ],
+    ai:"Current afternoon traffic levels on NH-65 suggest moderate congestion near Ameerpet junction. Route 1 via Banjara Hills Road offers the best throughput with minimal signal delays expected over the next 2 hours.",
+    tags:["Low Congestion","Signal Optimized","ETA Reliable"]
+  },
+  {
+    name:"Secunderabad Stn → HITEC City",
+    options:[
+      {label:"Route 1",dist:"18.7 km",time:"41 min",traffic:"Low",risk:"best",score:28,
+       color:"#06b6d4",path:[[17.4399,78.4983],[17.4350,78.4750],[17.4280,78.4500],[17.4350,78.4200],[17.4400,78.3900],[17.4435,78.3773]]},
+      {label:"Route 2",dist:"22.3 km",time:"52 min",traffic:"Med",risk:"medium",score:51,
+       color:"#eab308",path:[[17.4399,78.4983],[17.4600,78.4800],[17.4650,78.4400],[17.4550,78.4000],[17.4435,78.3773]]},
+      {label:"Route 3",dist:"26.8 km",time:"68 min",traffic:"High",risk:"high",score:79,
+       color:"#ef4444",path:[[17.4399,78.4983],[17.4200,78.5200],[17.4000,78.5100],[17.3900,78.4500],[17.4100,78.4000],[17.4435,78.3773]]}
+    ],
+    ai:"Metro line availability alongside Road 2 provides an excellent alternative for this corridor. The Jubilee Hills checkpoint shows clear traffic; departure within 15 minutes is advised for optimal delivery timing.",
+    tags:["Metro Adjacent","Fast Corridor","Low Risk"]
+  },
+  {
+    name:"Banjara Hills → Kukatpally",
+    options:[
+      {label:"Route 1",dist:"12.3 km",time:"31 min",traffic:"Low",risk:"best",score:22,
+       color:"#06b6d4",path:[[17.4156,78.4347],[17.4280,78.4300],[17.4400,78.4300],[17.4600,78.4200],[17.4750,78.4100],[17.4849,78.3996]]},
+      {label:"Route 2",dist:"15.8 km",time:"42 min",traffic:"Med",risk:"medium",score:47,
+       color:"#eab308",path:[[17.4156,78.4347],[17.4050,78.4400],[17.4000,78.4200],[17.4200,78.4000],[17.4500,78.3950],[17.4849,78.3996]]},
+      {label:"Route 3",dist:"19.2 km",time:"56 min",traffic:"High",risk:"high",score:68,
+       color:"#ef4444",path:[[17.4156,78.4347],[17.3900,78.4500],[17.3800,78.4300],[17.4000,78.3900],[17.4400,78.3800],[17.4849,78.3996]]}
+    ],
+    ai:"This is the shortest active logistics corridor between Banjara Hills and Kukatpally. Current signal cycle data indicates green wave possibility on SR Nagar stretch. Recommend immediate dispatch.",
+    tags:["Shortest Path","Green Wave","Optimal"]
+  },
+  {
+    name:"LB Nagar → Miyapur",
+    options:[
+      {label:"Route 1",dist:"39.3 km",time:"87 min",traffic:"Med",risk:"medium",score:55,
+       color:"#06b6d4",path:[[17.3436,78.5536],[17.3600,78.5200],[17.3900,78.5000],[17.4200,78.4700],[17.4500,78.4300],[17.4700,78.4000],[17.4849,78.3700],[17.4949,78.3516]]},
+      {label:"Route 2",dist:"44.1 km",time:"98 min",traffic:"High",risk:"high",score:71,
+       color:"#eab308",path:[[17.3436,78.5536],[17.3200,78.5300],[17.3100,78.5000],[17.3400,78.4500],[17.3900,78.4200],[17.4400,78.3800],[17.4949,78.3516]]},
+      {label:"Route 3",dist:"51.7 km",time:"115 min",traffic:"High",risk:"high",score:83,
+       color:"#ef4444",path:[[17.3436,78.5536],[17.3800,78.5800],[17.4200,78.5500],[17.4600,78.5000],[17.4900,78.4500],[17.4949,78.3516]]}
+    ],
+    ai:"Cross-city route requiring careful timing. Outer Ring Road segment offers best throughput but toll delays add ~8 min. Peak hour congestion at Punjagutta flyover expected until 19:30 IST. Plan accordingly.",
+    tags:["ORR Segment","Toll Route","Plan Ahead"]
+  },
+  {
+    name:"Ameerpet → Uppal",
+    options:[
+      {label:"Route 1",dist:"16.6 km",time:"37 min",traffic:"Low",risk:"best",score:31,
+       color:"#06b6d4",path:[[17.4361,78.4483],[17.4300,78.4700],[17.4250,78.5000],[17.4150,78.5300],[17.4000,78.5400],[17.3950,78.5500]]},
+      {label:"Route 2",dist:"19.4 km",time:"48 min",traffic:"Med",risk:"medium",score:53,
+       color:"#eab308",path:[[17.4361,78.4483],[17.4500,78.4600],[17.4600,78.4900],[17.4400,78.5200],[17.4100,78.5400],[17.3950,78.5500]]},
+      {label:"Route 3",dist:"23.1 km",time:"62 min",traffic:"High",risk:"high",score:77,
+       color:"#ef4444",path:[[17.4361,78.4483],[17.4200,78.4300],[17.4000,78.4500],[17.3900,78.5000],[17.3900,78.5300],[17.3950,78.5500]]}
+    ],
+    ai:"Metro Blue Line parallels this route making combined transport viable for personnel. For freight, Route 1 via Tarnaka is recommended — low signal density and wide carriageway support heavy vehicle movement.",
+    tags:["Metro Option","Freight-Friendly","Fast"]
+  }
+];
+
+// ── Map Setup ───────────────────────────────────────────────────────
+const map = L.map('map', {zoomControl:false}).setView([17.42, 78.43], 12);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+  attribution:'&copy; CartoDB',maxZoom:19,subdomains:'abcd'
+}).addTo(map);
+L.control.zoom({position:'topright'}).addTo(map);
+
+let layers=[], markers=[];
+
+function clearMap(){layers.forEach(l=>map.removeLayer(l));markers.forEach(m=>map.removeLayer(m));layers=[];markers=[];}
+
+function makeIcon(color,emoji){
+  return L.divIcon({className:'',html:`<div style="width:36px;height:36px;background:${color};border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,0.5);border:2px solid rgba(255,255,255,.2)"><span style="transform:rotate(45deg);font-size:16px">${emoji}</span></div>`,iconSize:[36,36],iconAnchor:[18,36]});
+}
+
+function drawRoute(routeIdx, activeOpt){
+  clearMap();
+  const r = ROUTES[routeIdx];
+  r.options.forEach((opt,i)=>{
+    const opacity = i===activeOpt ? 1 : 0.35;
+    const weight  = i===activeOpt ? 5 : 3;
+    const pl = L.polyline(opt.path,{color:opt.color,weight,opacity,lineCap:'round',lineJoin:'round'}).addTo(map);
+    layers.push(pl);
+  });
+  const active = r.options[activeOpt];
+  const start = active.path[0], end = active.path[active.path.length-1];
+  const m1 = L.marker(start,{icon:makeIcon('#7c3aed','📍')}).bindPopup(`<b>ORIGIN</b><br>${r.name.split('→')[0].trim()}`).addTo(map);
+  const m2 = L.marker(end,{icon:makeIcon('#06b6d4','🏁')}).bindPopup(`<b>DESTINATION</b><br>${r.name.split('→')[1].trim()}`).addTo(map);
+  markers.push(m1,m2);
+  const allPts = r.options[activeOpt].path;
+  map.fitBounds(L.latLngBounds(allPts).pad(0.15));
+}
+
+// ── Analyze ─────────────────────────────────────────────────────────
+function onRouteChange(){ document.getElementById('results').style.display='none'; }
+
+function analyze(){
+  const ri = parseInt(document.getElementById('route-select').value);
+  const r  = ROUTES[ri];
+  const loader = document.getElementById('loader');
+  const results= document.getElementById('results');
+  loader.style.display='block'; results.style.display='none';
+  setTimeout(()=>{
+    loader.style.display='none';
+    results.style.display='flex';
+    renderCards(ri, 0);
+    drawRoute(ri, 0);
+    updateInsights(ri, 0);
+  }, 1400);
+}
+
+function renderCards(ri, active){
+  const r = ROUTES[ri];
+  const el = document.getElementById('results');
+  el.innerHTML = r.options.map((opt,i)=>`
+    <div class="route-card ${i===0?'best':opt.risk} ${i===active?'active':''}" onclick="selectRoute(${ri},${i})">
+      <div class="rc-header">
+        <span class="rc-label">${opt.label}</span>
+        <span class="rc-badge ${i===0?'best':opt.risk}">${i===0?'BEST':opt.risk.toUpperCase()}</span>
+      </div>
+      <div class="rc-meta">
+        <span>📏 ${opt.dist}</span>
+        <span>⏱ ${opt.time}</span>
+        <span>🚦 ${opt.traffic}</span>
+      </div>
+    </div>`).join('');
+}
+
+function selectRoute(ri, oi){
+  renderCards(ri, oi);
+  drawRoute(ri, oi);
+  updateInsights(ri, oi);
+}
+
+function updateInsights(ri, oi){
+  const r   = ROUTES[ri];
+  const opt = r.options[oi];
+  const score= opt.score;
+  const rv  = document.getElementById('risk-val');
+  const rf  = document.getElementById('risk-fill');
+  const rl  = document.getElementById('risk-label');
+  const at  = document.getElementById('action-text');
+  const ad  = document.getElementById('action-desc');
+  const ai  = document.getElementById('ai-text');
+  const tg  = document.getElementById('tags');
+
+  let col= score<40?'var(--green)':score<65?'var(--yellow)':'var(--red)';
+  let lvl= score<40?'LOW':score<65?'MEDIUM':'HIGH';
+  let act= score<40?'PROCEED':score<65?'CAUTION':'RE-ROUTE';
+  let desc= score<40?'Conditions are optimal. Dispatch immediately.':score<65?'Moderate delays possible. Monitor in real time.':'Significant delays detected. Consider alternative.';
+
+  rv.textContent=score+'%'; rv.style.color=col;
+  rf.style.width=score+'%'; rf.style.background=col;
+  rl.textContent=lvl+' RISK';
+  at.textContent=act; at.style.color=col;
+  ad.textContent=desc;
+  ai.textContent=r.ai;
+  tg.innerHTML=r.tags.map(t=>`<span class="tag">${t}</span>`).join('');
+}
+
+// Init map
+map.whenReady(()=>{
+  L.marker([17.42,78.43],{icon:makeIcon('#7c3aed','🗺')}).addTo(map).bindPopup('Select a route and click Analyze Routes');
+});
+</script>
+</body>
+</html>

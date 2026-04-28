@@ -1,0 +1,165 @@
+/* ═══════════════════════════════════════════════════════════
+   FLOWSYNC AI — MAP STYLES
+   Leaflet Container · Overlays · Dark Theme
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── Map Wrapper ────────────────────────────────────────── */
+.map-wrapper {
+  position: relative;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-card);
+  min-height: 560px;
+  background: var(--bg-2);
+}
+
+/* ─── Leaflet Map Container ──────────────────────────────── */
+.map-container {
+  width: 100%;
+  height: 560px;
+  z-index: 1;
+  border-radius: var(--r-xl);
+}
+
+/* ─── Leaflet Attribution Override ──────────────────────── */
+.leaflet-control-attribution {
+  background: rgba(6,6,15,0.75) !important;
+  color: var(--txt-4) !important;
+  font-size: 10px !important;
+  padding: 3px 8px !important;
+  border-radius: var(--r-sm) !important;
+}
+
+.leaflet-control-attribution a { color: var(--txt-4) !important; }
+
+/* ─── Leaflet Zoom Controls ──────────────────────────────── */
+.leaflet-control-zoom {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--r-sm) !important;
+  box-shadow: var(--shadow-card) !important;
+  overflow: hidden;
+}
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+  background: rgba(6,6,15,0.88) !important;
+  color: var(--txt-2) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  font-size: 16px !important;
+  line-height: 30px !important;
+  width: 30px !important;
+  height: 30px !important;
+  transition: var(--t-fast) !important;
+}
+
+.leaflet-control-zoom-in:hover,
+.leaflet-control-zoom-out:hover {
+  background: var(--violet-soft) !important;
+  color: var(--violet-light) !important;
+}
+
+/* ─── Map Placeholder (no routes yet) ───────────────────── */
+.map-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s4);
+  z-index: 2;
+  pointer-events: none;
+  background: transparent;
+  transition: opacity 0.5s var(--ease);
+}
+
+.map-placeholder.hidden { opacity: 0; }
+
+.map-placeholder-icon {
+  font-size: 56px;
+  animation: floatCard 3s ease-in-out infinite;
+}
+
+.map-placeholder-text {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--txt-3);
+}
+
+.map-placeholder-sub {
+  font-size: 13px;
+  color: var(--txt-4);
+}
+
+/* ─── Map Gradient Overlay (edge fade) ───────────────────── */
+.map-wrapper::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 80px;
+  background: linear-gradient(to top, rgba(6,6,15,0.3), transparent);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ─── Map Loading Overlay ────────────────────────────────── */
+.map-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6,6,15,0.6);
+  backdrop-filter: blur(6px);
+  z-index: 600;
+  border-radius: var(--r-xl);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease);
+}
+
+.map-loading.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.map-loading-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s4);
+}
+
+.map-loading-ring {
+  width: 48px; height: 48px;
+  border: 3px solid rgba(124,58,237,0.2);
+  border-top-color: var(--violet);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.map-loading-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--txt-3);
+  letter-spacing: 0.08em;
+}
+
+/* ─── Mobile map height ──────────────────────────────────── */
+@media (max-width: 1100px) {
+  .map-container { height: 440px; }
+  .map-wrapper { min-height: 440px; }
+}
+
+@media (max-width: 768px) {
+  .map-container { height: 360px; }
+  .map-wrapper { min-height: 360px; border-radius: var(--r-lg); }
+}
+
+@media (max-width: 480px) {
+  .map-container { height: 300px; }
+  .map-wrapper { min-height: 300px; }
+  .map-legend { display: none; }
+}

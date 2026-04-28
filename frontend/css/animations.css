@@ -1,0 +1,217 @@
+/* ═══════════════════════════════════════════════════════════
+   FLOWSYNC AI — ANIMATIONS
+   Keyframes · Entrance · Pulse · Particle
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── Entrance ───────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ─── Globe / Ring ───────────────────────────────────────── */
+@keyframes spinRing {
+  from { transform: rotateX(70deg) rotateZ(0deg); }
+  to   { transform: rotateX(70deg) rotateZ(360deg); }
+}
+
+@keyframes corePulse {
+  0%, 100% { box-shadow: 0 0 50px rgba(124,58,237,0.7), 0 0 100px rgba(124,58,237,0.3), inset 0 0 40px rgba(0,0,0,0.3); }
+  50%       { box-shadow: 0 0 80px rgba(124,58,237,0.9), 0 0 150px rgba(124,58,237,0.4), inset 0 0 40px rgba(0,0,0,0.3); }
+}
+
+@keyframes heroGlow {
+  from { opacity: 0.5; transform: translate(-50%,-50%) scale(1); }
+  to   { opacity: 1;   transform: translate(-50%,-50%) scale(1.15); }
+}
+
+/* ─── Floating Cards ─────────────────────────────────────── */
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
+/* ─── Pulse Dots ─────────────────────────────────────────── */
+@keyframes pulseGreen {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
+  50%       { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+}
+
+@keyframes pulseYellow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(234,179,8,0.6); }
+  50%       { box-shadow: 0 0 0 6px rgba(234,179,8,0); }
+}
+
+@keyframes pulseRed {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.6); }
+  50%       { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+}
+
+@keyframes pulseBlue {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.6); }
+  50%       { box-shadow: 0 0 0 6px rgba(59,130,246,0); }
+}
+
+/* Risk pulse ring */
+@keyframes pulseRing {
+  0%   { transform: scale(0.8); opacity: 0.9; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+/* ─── Loading / Spin ─────────────────────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: 100%; }
+  100% { background-position: -100%; }
+}
+
+/* ─── Scroll Wheel ───────────────────────────────────────── */
+@keyframes scrollWheel {
+  0%   { opacity: 1; transform: translateY(0); }
+  60%  { opacity: 0; transform: translateY(12px); }
+  61%  { opacity: 0; transform: translateY(0); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Text Glow ──────────────────────────────────────────── */
+@keyframes textGlow {
+  0%, 100% { text-shadow: none; }
+  50%       {
+    text-shadow:
+      0 0 20px rgba(124,58,237,0.8),
+      0 0 40px rgba(124,58,237,0.4);
+  }
+}
+
+/* ─── Section Enter (intersection observer) ──────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Stagger children */
+.stagger-children > *:nth-child(1) { transition-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { transition-delay: 0.15s; }
+.stagger-children > *:nth-child(3) { transition-delay: 0.25s; }
+.stagger-children > *:nth-child(4) { transition-delay: 0.35s; }
+
+/* ─── Route Card Stagger ─────────────────────────────────── */
+.route-card:nth-child(1) { animation-delay: 0.05s; }
+.route-card:nth-child(2) { animation-delay: 0.15s; }
+.route-card:nth-child(3) { animation-delay: 0.25s; }
+
+/* ─── Button Ripple ──────────────────────────────────────── */
+@keyframes ripple {
+  from { transform: scale(0); opacity: 0.6; }
+  to   { transform: scale(4); opacity: 0; }
+}
+
+.btn-ripple {
+  position: absolute;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transform: scale(0);
+  animation: ripple 0.6s linear;
+  pointer-events: none;
+}
+
+/* ─── Typewriter cursor ──────────────────────────────────── */
+.typewriter-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--violet-light);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: cursorBlink 0.8s step-end infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ─── Analyze pulse (button waiting) ────────────────────── */
+@keyframes analyzePulse {
+  0%, 100% { box-shadow: 0 6px 30px rgba(124,58,237,0.55); }
+  50%       { box-shadow: 0 6px 60px rgba(124,58,237,0.9), 0 0 0 8px rgba(124,58,237,0.2); }
+}
+
+#analyze-btn.loading {
+  animation: analyzePulse 1.2s ease infinite;
+}
+
+/* ─── Map route draw animation ───────────────────────────── */
+@keyframes routeDash {
+  from { stroke-dashoffset: 1000; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* ─── Forecast chart draw ────────────────────────────────── */
+@keyframes chartDraw {
+  from { stroke-dashoffset: 2000; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* ─── Stats counter ──────────────────────────────────────── */
+.count-done {
+  animation: scaleIn 0.4s var(--ease);
+}

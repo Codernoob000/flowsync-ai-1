@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="FlowSync AI – Real-time AI-powered route risk prediction and optimization. Predict disruptions using traffic and weather data in Hyderabad." />
+  <meta property="og:title" content="FlowSync AI – Smart Route Optimization" />
+  <meta property="og:description" content="AI predicts disruptions using traffic and weather. Select safest routes in real time." />
+  <meta name="theme-color" content="#7c3aed" />
+  <title>FlowSync AI – Smart Route Optimization</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet CSS (Free map – no API key needed) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- App Stylesheets -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+  <link rel="stylesheet" href="css/map.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--   PARTICLE CANVAS (Hero Background)    -->
+  <!-- ═══════════════════════════════════════ -->
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--   NAVIGATION                           -->
+  <!-- ═══════════════════════════════════════ -->
+  <nav id="navbar" class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <img src="assets/logo.png" alt="FlowSync AI logo icon" id="logo-icon" />
+        <span class="logo-text">FlowSync <span class="logo-accent">AI</span></span>
+      </div>
+
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="#demo" class="nav-link">Live Demo</a></li>
+        <li><a href="#insights" class="nav-link">AI Insights</a></li>
+        <li><a href="#simulate" class="nav-link">Simulate</a></li>
+        <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+      </ul>
+
+      <a href="#demo" class="btn btn-primary btn-sm nav-cta" id="nav-cta-btn">Analyze Routes →</a>
+
+      <button class="hamburger" id="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--   HERO SECTION                         -->
+  <!-- ═══════════════════════════════════════ -->
+  <section id="hero" class="hero" aria-label="Hero">
+    <div class="hero-content">
+      <div class="hero-badge" id="hero-badge">
+        <span class="badge-dot" aria-hidden="true"></span>
+        AI-Powered Route Intelligence
+      </div>
+
+      <h1 class="hero-title">
+        <span class="hero-line-1">PREDICT.</span>
+        <span class="hero-line-2">OPTIMIZE.</span>
+        <span class="hero-line-3">DELIVER.</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        FlowSync AI analyzes real-time traffic, weather, and disruption patterns
+        to select the safest, most efficient route — before you even start moving.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#demo" class="btn btn-primary btn-lg" id="hero-cta-btn">
+          <span>Analyze Routes</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+        <a href="#how-it-works" class="btn btn-ghost btn-lg" id="how-works-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+          </svg>
+          <span>How It Works</span>
+        </a>
+      </div>
+
+      <div class="hero-stats" aria-label="Key statistics">
+        <div class="hero-stat">
+          <div class="hero-stat-value">
+            <span class="hero-count" data-target="50">0</span><span class="hero-suffix">K+</span>
+          </div>
+          <span class="hero-stat-label">Routes Analyzed</span>
+        </div>
+        <div class="hero-stat-divider" aria-hidden="true"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">
+            <span class="hero-count" data-target="94">0</span><span class="hero-suffix">%</span>
+          </div>
+          <span class="hero-stat-label">AI Accuracy</span>
+        </div>
+        <div class="hero-stat-divider" aria-hidden="true"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">
+            <span class="hero-count" data-target="2">0</span><span class="hero-suffix">.3h</span>
+          </div>
+          <span class="hero-stat-label">Avg Time Saved</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Globe Visual -->
+    <div class="hero-visual" aria-hidden="true">
+      <div class="globe-container">
+        <div class="globe-ring ring-1"></div>
+        <div class="globe-ring ring-2"></div>
+        <div class="globe-ring ring-3"></div>
+        <div class="globe-core">
+          <svg viewBox="0 0 80 80" class="globe-svg" aria-hidden="true">
+            <circle cx="20" cy="40" r="3" fill="#7c3aed" opacity="0.9"/>
+            <circle cx="60" cy="20" r="3" fill="#06b6d4" opacity="0.9"/>
+            <circle cx="65" cy="60" r="3" fill="#7c3aed" opacity="0.7"/>
+            <circle cx="40" cy="70" r="3" fill="#06b6d4" opacity="0.8"/>
+            <circle cx="40" cy="40" r="4" fill="white" opacity="0.9"/>
+            <line x1="20" y1="40" x2="40" y2="40" stroke="#7c3aed" stroke-width="1.5" opacity="0.7"/>
+            <line x1="40" y1="40" x2="60" y2="20" stroke="#06b6d4" stroke-width="1.5" opacity="0.7"/>
+            <line x1="40" y1="40" x2="65" y2="60" stroke="#7c3aed" stroke-width="1.5" opacity="0.5"/>
+            <line x1="40" y1="40" x2="40" y2="70" stroke="#06b6d4" stroke-width="1.5" opacity="0.5"/>
+          </svg>
+        </div>
+
+        <!-- Floating Info Cards -->
+        <div class="floating-card card-1">
+          <div class="fc-icon">🟢</div>
+          <div class="fc-text">
+            <div class="fc-title">Route Optimized</div>
+            <div class="fc-sub">14.2 km · 28 min</div>
+          </div>
+        </div>
+        <div class="floating-card card-2">
+          <div class="fc-icon">🤖</div>
+          <div class="fc-text">
+            <div class="fc-title">AI Processing</div>
+            <div class="fc-sub">Traffic + Weather</div>
+          </div>
+        </div>
+        <div class="floating-card card-3">
+          <div class="fc-icon">⚡</div>
+          <div class="fc-text">
+            <div class="fc-title">Real-time Data</div>
+            <div class="fc-sub">Updated every 30s</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="scroll-indicator" aria-hidden="true">
+      <div class="scroll-mouse"><div class="scroll-wheel"></div></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--   STATS BAR                            -->
+  <!-- ═══════════════════════════════════════ -->
+  <section id="stats" class="stats-bar" aria-label="Platform statistics">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-emoji" aria-hidden="true">🗺️</div>
+          <div class="stat-info">
+            <div class="stat-value"><span class="count" data-target="50">0</span>K+</div>
+            <div class="stat-label">Routes Analyzed</div>
+          </div>
+        </div>
+        <div class="stat-divider" aria-hidden="true"></div>
+        <div class="stat-item">
+          <div class="stat-emoji" aria-hidden="true">🎯</div>
+          <div class="stat-info">
+            <div class="stat-value"><span class="count" data-target="94">0</span>.7%</div>
+            <div class="stat-label">AI Accuracy Rate</div>
+          </div>
+        </div>
+        <div class="stat-divider" aria-hidden="true"></div>
+        <div class="stat-item">
+          <div class="stat-emoji" aria-hidden="true">⚡</div>
+          <div class="stat-info">
+            <div class="stat-value"><span class="count" data-target="2">0</span>.3h</div>
+            <div class="stat-label">Avg Time Saved</div>
+          </div>
+        </div>
+        <div class="stat-divider" aria-hidden="true"></div>
+        <div class="stat-item">
+          <div class="stat-emoji" aria-hidden="true">🌐</div>
+          <div class="stat-info">
+            <div class="stat-value">Real-time</div>
+            <div class="stat-label">AI Processing</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--   DEMO SECTION                         -->
+  <!-- ═══════════════════════════════════════ -->
+  <section id="demo" class="demo-section" aria-label="Route analysis demo">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">🔴 LIVE DEMO</div>
+        <h2 class="section-title">Route Intelligence Dashboard</h2>
+        <p class="section-subtitle">
+          Enter your origin and destination. Our AI analyzes multiple routes and selects the safest, fastest path in real time.
+        </p>
+      </div>
+
+      <div class="demo-layout">
+        <!-- ── Control Panel ── -->
+        <aside class="control-panel" id="control-panel" aria-label="Route analysis controls">
+          <div class="panel-header">
+            <h3 class="panel-title">Route Analyzer</h3>
+            <div class="connection-status" id="connection-status" aria-live="polite">
+              <span class="status-dot" aria-hidden="true"></span>
+              <span class="status-text" id="status-text">Connecting…</span>
+            </div>
+          </div>
+
+          <!-- Honeypot: Brave/Chrome password manager absorbs this and leaves our real inputs alone -->
+          <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none;width:0;height:0;overflow:hidden;" aria-hidden="true">
+            <input type="text" name="username" tabindex="-1" autocomplete="username" />
+            <input type="password" name="password" tabindex="-1" autocomplete="current-password" />
+          </div>
+
+          <!-- Origin -->
+          <div class="input-group">
+            <label class="input-label" for="origin-input">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+              Origin
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="text"
+                id="origin-input"
+                class="route-input"
+                name="origin-location"
+                placeholder="Starting location…"
+                value="Hyderabad Central Station, Secunderabad"
+                autocomplete="off"
+                data-lpignore="true"
+                data-form-type="other"
+                data-1p-ignore
+                data-bwignore="true"
+                spellcheck="false"
+                readonly
+                onfocus="this.removeAttribute('readonly')"
+              />
+            </div>
+          </div>
+
+          <!-- Swap -->
+          <div class="route-connector">
+            <div class="connector-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <button class="swap-btn" id="swap-btn" aria-label="Swap origin and destination">⇅</button>
+          </div>
+
+          <!-- Destination -->
+          <div class="input-group">
+            <label class="input-label" for="dest-input">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+              Destination
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="text"
+                id="dest-input"
+                class="route-input"
+                name="dest-location"
+                placeholder="Destination…"
+                value="HITEC City, Hyderabad"
+                autocomplete="off"
+                data-lpignore="true"
+                data-form-type="other"
+                data-1p-ignore
+                data-bwignore="true"
+                spellcheck="false"
+                readonly
+                onfocus="this.removeAttribute('readonly')"
+              />
+            </div>
+          </div>
+
+          <!-- Analyze Button -->
+          <button class="btn btn-primary btn-full" id="analyze-btn" aria-label="Analyze routes">
+            <span class="btn-text" id="btn-text">🔍 &nbsp;Analyze Routes</span>
+            <span class="btn-loader" id="btn-loader" style="display:none;" aria-hidden="true">
+              <span class="loader-ring"></span>Analyzing AI...
+            </span>
+          </button>
+
+          <!-- Route Results -->
+          <div class="route-results" id="route-results" style="display:none;" aria-live="polite" aria-label="Route results">
+            <div class="results-header">
+              <span>AI Route Analysis</span>
+              <span class="results-badge" id="results-badge">3 Routes Found</span>
+            </div>
+            <div class="route-cards" id="route-cards">
+              <!-- Dynamically populated by app.js -->
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="quick-actions">
+            <button class="quick-btn" id="demo-btn" aria-label="Load demo data">⚡ Load Demo</button>
+            <button class="quick-btn" id="clear-btn" aria-label="Clear map">✕ Clear</button>
+          </div>
+        </aside>
+
+        <!-- ── Map ── -->
+        <div class="map-wrapper" id="map-wrapper">
+          <div id="map" class="map-container" aria-label="Interactive route map for Hyderabad"></div>
+
+          <div class="map-legend" id="map-legend" aria-label="Map legend">
+            <div class="legend-title">Route Risk Legend</div>
+            <div class="legend-item"><div class="legend-line blue" aria-hidden="true"></div><span>Best Route (AI)</span></div>
+            <div class="legend-item"><div class="legend-line green" aria-hidden="true"></div><span>Low Risk</span></div>
+            <div class="legend-item"><div class="legend-line yellow" aria-hidden="true"></div><span>Medium Risk</span></div>
+            <div class="legend-item"><div class="legend-line red" aria-hidden="true"></div><span>High Risk</span></div>
+          </div>
+
+          <div class="map-live-badge" aria-live="polite">
+            <span class="live-pulse" aria-hidden="true"></span>
+            Hyderabad · Live Traffic
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--   AI INSIGHTS SECTION                  -->
+  <!-- ═══════════════════════════════════════ -->
+  <section id="insights" class="insights-section" style="display:none;" aria-live="polite" aria-label="AI insights">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">🤖 AI INSIGHTS</div>
+        <h2 class="section-title">Intelligent Route Analysis</h2>
+      </div>
+
+      <div class="insights-grid">
+        <!-- Risk Card -->
+        <div class="insight-card risk-card" id="risk-card">
+          <div class="insight-icon" aria-hidden="true">⚠️</div>
+          <h3 class="insight-title">Risk Assessment</h3>
+          <div class="risk-display">
+            <div class="risk-level-row">
+              <div class="risk-pulse-dot" id="risk-pulse-dot" aria-hidden="true"></div>
+              <span class="risk-level-text" id="risk-level-text">LOW</span>
+            </div>
+            <div class="risk-bar-track" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" aria-label="Risk score">
+              <div class="risk-bar-fill" id="risk-bar-fill" style="width:20%;"></div>
+            </div>
+            <div class="risk-score-label" id="risk-score-label">Risk Score: 20%</div>
+          </div>
+        </div>
+
+        <!-- Action Card -->
+        <div class="insight-card action-card" id="action-card">
+          <div class="insight-icon" aria-hidden="true">✅</div>
+          <h3 class="insight-title">Recommended Action</h3>
+          <div class="action-body">
+            <div class="action-badge-text" id="action-badge-text">PROCEED</div>
+            <p class="action-description" id="action-description">Route is clear. Standard delivery timeline applies.</p>
+          </div>
+        </div>
+
+        <!-- AI Explanation Card -->
+        <div class="insight-card explanation-card" id="explanation-card">
+          <div class="insight-icon" aria-hidden="true">💡</div>
+          <h3 class="insight-title">AI Explanation</h3>
+          <p class="explanation-text" id="explanation-text" aria-live="polite"></p>
+          <div class="explanation-tags" id="explanation-tags">
+            <span class="exp-tag">🌤️ Weather: Clear</span>
+            <span class="exp-tag">🚗 Traffic: Moderate</span>
+            <span class="exp-tag">⏱️ ETA: 28 min</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--   SIMULATE SECTION                     -->
+  <!-- ═══════════════════════════════════════ -->
+  <section id="simulate" class="simulate-section" aria-label="Risk simulation">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">📊 RISK SIMULATION</div>
+        <h2 class="section-title">Future Risk Forecasting</h2>
+        <p class="section-subtitle">
+          Simulate how route risks change over the next 24 hours based on AI predictions.
+        </p>
+      </div>
+
+      <div class="simulate-layout">
+        <!-- Controls -->
+        <div class="simulate-controls">
+          <div class="time-slider-box">
+            <div class="slider-header">
+              <span class="slider-label">Time Offset</span>
+              <span class="slider-value" id="slider-value">Now</span>
+            </div>
+            <input
+              type="range"
+              id="time-slider"
+              class="time-slider"
+              min="0"
+              max="24"
+              value="0"
+              step="1"
+              aria-label="Time offset in hours"
+            />
+            <div class="slider-ticks" aria-hidden="true">
+              <span>Now</span><span>6h</span><span>12h</span><span>18h</span><span>24h</span>
+            </div>
+          </div>
+
+          <div class="sim-risk-bars">
+            <div class="sim-bar-row">
+              <div class="sim-route-label"><div class="route-dot blue" aria-hidden="true"></div><span>Best Route</span></div>
+              <div class="sim-track"><div class="sim-fill blue-fill" id="sim-bar1" style="width:20%"></div></div>
+              <span class="sim-pct" id="sim-val1">20%</span>
+            </div>
+            <div class="sim-bar-row">
+              <div class="sim-route-label"><div class="route-dot yellow" aria-hidden="true"></div><span>Route 2</span></div>
+              <div class="sim-track"><div class="sim-fill yellow-fill" id="sim-bar2" style="width:55%"></div></div>
+              <span class="sim-pct" id="sim-val2">55%</span>
+            </div>
+            <div class="sim-bar-row">
+              <div class="sim-route-label"><div class="route-dot red" aria-hidden="true"></div><span>Route 3</span></div>
+              <div class="sim-track"><div class="sim-fill red-fill" id="sim-bar3" style="width:85%"></div></div>
+              <span class="sim-pct" id="sim-val3">85%</span>
+            </div>
+          </div>
+
+          <button class="btn btn-secondary btn-full" id="simulate-btn" aria-label="Run AI simulation">
+            🔮 &nbsp;Run AI Simulation
+          </button>
+        </div>
+
+        <!-- Forecast Chart -->
+        <div class="forecast-chart-box">
+          <div class="chart-header">
+            <span class="chart-title">Risk Forecast (24h)</span>
+            <span class="chart-subtitle">Based on historical patterns + live data</span>
+          </div>
+          <canvas id="forecast-chart" class="forecast-canvas" aria-label="24h risk forecast chart" role="img"></canvas>
+          <div class="chart-legend" aria-label="Chart legend">
+            <span><div class="chart-dot blue" aria-hidden="true"></div> Best Route</span>
+            <span><div class="chart-dot yellow" aria-hidden="true"></div> Route 2</span>
+            <span><div class="chart-dot red" aria-hidden="true"></div> Route 3</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--   HOW IT WORKS                         -->
+  <!-- ═══════════════════════════════════════ -->
+  <section id="how-it-works" class="how-section" aria-label="How FlowSync AI works">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">⚙️ TECHNOLOGY</div>
+        <h2 class="section-title">How FlowSync AI Works</h2>
+        <p class="section-subtitle">Three intelligent steps that happen in milliseconds.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card" id="step-1">
+          <div class="step-number" aria-hidden="true">01</div>
+          <div class="step-icon-wrap"><div class="step-icon" aria-hidden="true">📡</div></div>
+          <h3 class="step-title">Data Ingestion</h3>
+          <p class="step-desc">Real-time traffic feeds, weather APIs, historical disruption patterns, and live road condition data are collected and preprocessed at scale.</p>
+          <div class="step-tags">
+            <span class="s-tag">Traffic API</span>
+            <span class="s-tag">Weather API</span>
+            <span class="s-tag">Historical Data</span>
+          </div>
+        </div>
+
+        <div class="step-arrow" aria-hidden="true">→</div>
+
+        <div class="step-card" id="step-2">
+          <div class="step-number" aria-hidden="true">02</div>
+          <div class="step-icon-wrap"><div class="step-icon" aria-hidden="true">🧠</div></div>
+          <h3 class="step-title">AI Risk Analysis</h3>
+          <p class="step-desc">Gemini AI processes all data streams simultaneously, predicts disruption probabilities, and assigns precise risk scores to each available route.</p>
+          <div class="step-tags">
+            <span class="s-tag">Gemini AI</span>
+            <span class="s-tag">ML Models</span>
+            <span class="s-tag">Risk Scoring</span>
+          </div>
+        </div>
+
+        <div class="step-arrow" aria-hidden="true">→</div>
+
+        <div class="step-card" id="step-3">
+          <div class="step-number" aria-hidden="true">03</div>
+          <div class="step-icon-wrap"><div class="step-icon" aria-hidden="true">🚀</div></div>
+          <h3 class="step-title">Route Optimization</h3>
+          <p class="step-desc">The safest, most efficient path is highlighted on the map. Alternative routes are ranked and explained with clear, actionable AI insights.</p>
+          <div class="step-tags">
+            <span class="s-tag">Optimization</span>
+            <span class="s-tag">Real-time</span>
+            <span class="s-tag">Explainable AI</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--   FOOTER                               -->
+  <!-- ═══════════════════════════════════════ -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="nav-logo">
+            <span class="logo-text">FlowSync <span class="logo-accent">AI</span></span>
+          </div>
+          <p class="footer-tagline">Intelligent route optimization powered by Gemini AI.</p>
+        </div>
+        <nav class="footer-links" aria-label="Footer navigation">
+          <a href="#demo">Live Demo</a>
+          <a href="#simulate">Simulate</a>
+          <a href="#how-it-works">Technology</a>
+        </nav>
+        <div class="footer-tech">
+          <span class="built-with">Built with</span>
+          <div class="tech-badges">
+            <span class="t-badge">FastAPI</span>
+            <span class="t-badge">Gemini AI</span>
+            <span class="t-badge">Leaflet Maps</span>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2024 FlowSync AI. All rights reserved.</p>
+        <div class="footer-status">
+          <span class="status-dot-green" aria-hidden="true"></span>
+          All Systems Operational
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--   SCRIPTS                              -->
+  <!-- ═══════════════════════════════════════ -->
+  <!-- Google Maps JavaScript API for Places Autocomplete -->
+  <!-- Replace YOUR_GOOGLE_MAPS_API_KEY with your actual API key -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places"></script>
+  
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/demo.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

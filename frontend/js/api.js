@@ -1,11 +1,30 @@
 /* ═══════════════════════════════════════════════════════════
    FLOWSYNC AI — API CLIENT
-   DEMO_MODE (set in demo.js) → returns mock data instantly
-   Otherwise → calls FastAPI backend at 127.0.0.1:8000
+   DEMO_MODE (set in demo.js) → auto-detected via health check
+   If backend is reachable → live mode; otherwise → demo fallback
    ═══════════════════════════════════════════════════════════ */
 
 const API_BASE_URL = 'http://127.0.0.1:8000';
 const API_TIMEOUT  = 15000;
+
+/* ─── Auto-detect backend availability ───────────────────── */
+async function autoDetectMode() {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch(`${API_BASE_URL}/health`, { signal: controller.signal });
+    clearTimeout(timer);
+    if (res.ok) {
+      DEMO_MODE = false;
+      console.log('[FlowSync API] ✅ Backend detected — LIVE MODE');
+      return true;
+    }
+  } catch (e) {
+    console.warn('[FlowSync API] ⚠️ Backend unreachable — DEMO MODE', e.message || '');
+  }
+  DEMO_MODE = true;
+  return false;
+}
 
 /* ─── Utility: fetch with timeout ────────────────────────── */
 async function fetchWithTimeout(url, options = {}) {
@@ -66,8 +85,18 @@ const CITY_COORDS = {
   'mumbai':                     { lat: 19.0760, lng: 72.8777 },
   'pune':                       { lat: 18.5204, lng: 73.8567 },
   'bangalore':                  { lat: 12.9716, lng: 77.5946 },
+  'bengaluru':                  { lat: 12.9716, lng: 77.5946 },
   'chennai':                    { lat: 13.0827, lng: 80.2707 },
   'delhi':                      { lat: 28.7041, lng: 77.1025 },
+  'new delhi':                  { lat: 28.6139, lng: 77.2090 },
+  'hyderabad':                  { lat: 17.3850, lng: 78.4867 },
+  'kolkata':                    { lat: 22.5726, lng: 88.3639 },
+  'ahmedabad':                  { lat: 23.0225, lng: 72.5714 },
+  'jaipur':                     { lat: 26.9124, lng: 75.7873 },
+  'lucknow':                    { lat: 26.8467, lng: 80.9462 },
+  'nagpur':                     { lat: 21.1458, lng: 79.0882 },
+  'visakhapatnam':              { lat: 17.6868, lng: 83.2185 },
+  'vizag':                      { lat: 17.6868, lng: 83.2185 },
 };
 
 function getCoords(locationStr) {

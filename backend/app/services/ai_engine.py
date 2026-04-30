@@ -1,13 +1,14 @@
 import pickle
 import pandas as pd
 import os
+import pathlib
 from app.services.gemini_svc import generate_explanation
 
 # -----------------------------
 # Load Model (SAFE PATH)
 # -----------------------------
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_PATH = os.path.join(BASE_DIR, "..", "model.pkl")
+_THIS_DIR = pathlib.Path(__file__).resolve().parent
+MODEL_PATH = _THIS_DIR.parent.parent / "model.pkl"
 
 model = None
 

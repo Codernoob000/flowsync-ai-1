@@ -3,7 +3,7 @@
    Mock backend responses for offline / demo mode
    ═══════════════════════════════════════════════════════════ */
 
-const DEMO_MODE = true; // Set to true to force demo mode (no backend needed)
+let DEMO_MODE = true; // Auto-detected: set to false when backend is reachable
 
 /* ─── Hyderabad Route Coordinates ───────────────────────── */
 // Origin: Hyderabad Central Station (Secunderabad)

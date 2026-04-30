@@ -20,7 +20,7 @@ timeout /t 2 >nul
 
 REM ── Start Backend ──
 echo  [2/4] Starting FastAPI Backend on http://localhost:8000 ...
-start "FlowSync Backend" cmd /k "cd /d "%~dp0flowsync-ai-1\backend" && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+start "FlowSync Backend" cmd /k "cd /d "%~dp0backend" && uvicorn app.main:app --host 0.0.0.0 --port 8000"
 timeout /t 5 >nul
 
 REM ── Start Frontend ──

@@ -19,7 +19,7 @@ const $$ = sel => document.querySelectorAll(sel);
 /* ════════════════════════════════════════════════════════════
    INIT
    ════════════════════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   suppressAutofillIcons();
   initParticleCanvas();
   initMap();
@@ -28,16 +28,21 @@ document.addEventListener('DOMContentLoaded', () => {
   initStatsCounters();
   initScrollReveal();
   initEventListeners();
-  checkConnectionStatus();
   drawForecastChart(0);
   initTimeSlider();
   addRippleEffect();
   initPlacesAutocomplete();
 
-  // Auto-load demo data on page open
+  // Auto-detect backend availability, then update connection status
+  await autoDetectMode();
+  checkConnectionStatus();
+
+  // Only auto-load demo if backend is offline
   if (DEMO_MODE) {
-    console.log('[FlowSync] Auto-loading demo data...');
+    console.log('[FlowSync] Backend offline — auto-loading demo data...');
     setTimeout(() => handleAnalyzeRoutes(), 1500);
+  } else {
+    console.log('[FlowSync] Backend online — waiting for user input.');
   }
 });
 

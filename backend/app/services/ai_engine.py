@@ -1,32 +1,43 @@
-import pickle
-import pandas as pd
 import os
 import pathlib
-from app.services.gemini_svc import generate_explanation
 
 # -----------------------------
-# Load Model (SAFE PATH)
+# LAZY IMPORTS — pandas, pickle, sklearn are NOT imported at module level.
+# They are loaded on first request to avoid blocking Cloud Run startup.
 # -----------------------------
 _THIS_DIR = pathlib.Path(__file__).resolve().parent
 MODEL_PATH = _THIS_DIR.parent.parent / "model.pkl"
 
-model = None
+_model = None
+_model_loaded = False  # False = not yet attempted; True = attempted (may still be None)
 
-try:
-    with open(MODEL_PATH, "rb") as f:
-        model = pickle.load(f)
-    print("[OK] Model loaded from", MODEL_PATH)
-except Exception as e:
-    print("[WARN] Model load failed:", e, "- Using rule-based fallback.")
-    model = None
+
+def _ensure_model():
+    """Lazy-load the ML model on first call. Never blocks app startup."""
+    global _model, _model_loaded
+    if _model_loaded:
+        return _model
+    _model_loaded = True
+    try:
+        import pickle
+        with open(MODEL_PATH, "rb") as f:
+            _model = pickle.load(f)
+        print("[OK] Model loaded from", MODEL_PATH)
+    except Exception as e:
+        print("[WARN] Model load failed:", e, "- Using rule-based fallback.")
+        _model = None
+    return _model
+
 
 # -----------------------------
-# Prepare Input
+# Prepare Input (lazy pandas import)
 # -----------------------------
 def prepare_input(data):
+    model = _ensure_model()
     if model is None:
         return None
 
+    import pandas as pd
     df = pd.DataFrame([data])
     df = pd.get_dummies(df)
 
@@ -101,12 +112,12 @@ def explain(data, risk):
     return f"{risk} risk due to " + ", ".join(reasons)
 
 # -----------------------------
-# 🔥 SMART HYBRID SCORING (IMPORTANT)
+# SMART HYBRID SCORING
 # -----------------------------
 def route_score(route, risk, probability):
     score = 0
 
-    # 🔥 Traffic (major factor)
+    # Traffic (major factor)
     if route["traffic"] == "low":
         score += 20
     elif route["traffic"] == "medium":
@@ -114,19 +125,19 @@ def route_score(route, risk, probability):
     else:
         score += 0
 
-    # 🔥 Weather impact
+    # Weather impact
     if route["weather"] in ["clear", "clouds"]:
         score += 15
     else:
         score += 5
 
-    # 🔥 Distance penalty
+    # Distance penalty
     score -= route["distance"] * 0.05
 
-    # 🔥 ML probability influence
+    # ML probability influence
     score -= probability * 20
 
-    # 🔥 Risk penalty
+    # Risk penalty
     risk_penalty = {"Low": 0, "Medium": 15, "High": 40}
     score -= risk_penalty[risk]
 
@@ -136,6 +147,7 @@ def route_score(route, risk, probability):
 # MAIN FUNCTION
 # -----------------------------
 def evaluate_routes(routes):
+    model = _ensure_model()
     results = []
 
     for route in routes:
@@ -147,7 +159,7 @@ def evaluate_routes(routes):
         else:
             probability, risk = get_risk_heuristic(route)
 
-        # 🔥 SAFETY OVERRIDES
+        # SAFETY OVERRIDES
         if route["weather"] == "storm":
             risk = "High"
         elif route["traffic"] == "high" and route["weather"] == "rain":
@@ -155,7 +167,7 @@ def evaluate_routes(routes):
         elif route["traffic"] == "low" and route["weather"] == "clear":
             risk = "Low"
 
-        # 🔥 NEW SMART SCORING
+        # SMART SCORING
         score = route_score(route, risk, probability)
 
         # Action
@@ -165,7 +177,6 @@ def evaluate_routes(routes):
             action = "Use with caution"
         else:
             action = "Safe route"
-        # 🔥 DISABLE GEMINI TEMPORARILY (STABLE MODE)
 
         explanation = explain(route, risk)
         
@@ -178,7 +189,7 @@ def evaluate_routes(routes):
             "action": action
         })
 
-    # 🔥 PRIORITIZE SAFETY + SCORE
+    # PRIORITIZE SAFETY + SCORE
     risk_priority = {"Low": 0, "Medium": 1, "High": 2}
     best = min(results, key=lambda x: (risk_priority[x["risk"]], -x["score"]))
 

@@ -1,16 +1,12 @@
 import os
 
-try:
-    import google.generativeai as genai
-    _GENAI_AVAILABLE = True
-except ImportError:
-    genai = None
-    _GENAI_AVAILABLE = False
-
 
 def generate_explanation(route, risk):
     """Generate AI explanation using Gemini. Raises on failure so caller can fallback."""
-    if not _GENAI_AVAILABLE:
+    # Lazy import — don't load google.generativeai at startup
+    try:
+        import google.generativeai as genai
+    except ImportError:
         raise RuntimeError("google-generativeai package not installed")
 
     api_key = os.environ.get("GEMINI_API_KEY")
